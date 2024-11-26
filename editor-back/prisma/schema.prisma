@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
+}
+
+model users {
+  uid      String @id @default(uuid()) @db.Uuid
+  name     String @db.VarChar(64)
+  email    String @unique(map: "unique_email") @db.VarChar(128)
+  password String @db.VarChar(64)
+  tasks    Int[]
+  role     String @db.VarChar(16)
+}

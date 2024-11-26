@@ -8,6 +8,7 @@ export const useUserStore = defineStore(
     const userInfo = ref({
       id: "",
       name: "",
+      tasks: [],
     });
 
     return {

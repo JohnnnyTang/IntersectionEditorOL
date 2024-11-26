@@ -27,6 +27,7 @@ router.beforeEach((to,from,next)=>{
     const store = useUserStore()
     //-：获取是否登录的状态
     let isLogin = store.isLogin
+    console.log(isLogin);
     //-:访问的请求不是 login，不是reg 也没有登录
     if(to.name!=='login'&&!isLogin){
         next({name: 'login'})

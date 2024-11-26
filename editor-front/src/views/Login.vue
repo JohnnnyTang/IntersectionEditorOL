@@ -7,7 +7,7 @@
         <input type="text" placeholder="User Name" class="input" />
         <input type="email" placeholder="Email" class="input" />
         <input type="password" placeholder="Password" class="input" />
-        <button class="btn">Sign Up</button>
+        <button class="btn" @click="signUpClick">Sign Up</button>
       </form>
     </div>
 
@@ -18,7 +18,7 @@
         <input type="email" placeholder="Email" class="input" />
         <input type="password" placeholder="Password" class="input" />
         <a href="#" class="link">Forgot your password?</a>
-        <button class="btn">Sign In</button>
+        <button class="btn" @click="signInClick">Sign In</button>
       </form>
     </div>
 
@@ -26,10 +26,10 @@
     <div class="container__overlay">
       <div class="overlay">
         <div class="overlay__panel overlay--left">
-          <button class="btn" id="signIn">Sign In</button>
+          <button class="btn" id="signIn" @click="loginState = true">Sign In</button>
         </div>
         <div class="overlay__panel overlay--right">
-          <button class="btn" id="signUp">Sign Up</button>
+          <button class="btn" id="signUp" @click="loginState = false">Sign Up</button>
         </div>
       </div>
     </div>
@@ -47,19 +47,27 @@ onMounted(() => {
   const secondForm = document.getElementById("form2");
   const container = document.querySelector(".container");
 
-  signInBtn.addEventListener("click", () => {
-    container.classList.remove("right-panel-active");
-  });
+  // signInBtn.addEventListener("click", () => {
+  //   container.classList.remove("right-panel-active");
+  // });
 
-  signUpBtn.addEventListener("click", () => {
-    container.classList.add("right-panel-active");
-  });
+  // signUpBtn.addEventListener("click", () => {
+  //   container.classList.add("right-panel-active");
+  // });
 
   fistForm.addEventListener("submit", (e) => e.preventDefault());
   secondForm.addEventListener("submit", (e) => e.preventDefault());
 });
 
 const loginState = ref(false);
+
+const signInClick = () => {
+  console.log('登录submit');
+};
+
+const signUpClick = () => {
+  console.log('注册submit');
+};
 
 // http.post('/admin/login',{
 //         adminName: user.username,
@@ -90,7 +98,7 @@ $max-height: 100vh;
 body {
   align-items: center;
   background-color: $white;
-  background: url("/login-bg.jpg");
+  // background: url("/bg-1.png");
   background-attachment: fixed;
   background-position: center;
   background-repeat: no-repeat;
@@ -103,6 +111,7 @@ body {
 .form__title {
   color: $gray;
   font-weight: 800;
+  font-size: 2rem;
   margin: 0;
   margin-bottom: 1.25rem;
 }
@@ -174,7 +183,7 @@ body {
 
 .overlay {
   background-color: $lightblue;
-  background: url("/login-bg.jpg");
+  background: url("/32073.jpg");
   background-attachment: fixed;
   background-position: center;
   background-repeat: no-repeat;
@@ -223,22 +232,33 @@ body {
 }
 
 .btn {
-  background-color: var(--blue);
+  background-color: $blue;
+  background-size: 200%;
   background-image: linear-gradient(
     90deg,
-    $blue 0%,
-    $lightblue 74%
+    rgb(54, 15, 93) 0%,
+    rgb(32, 41, 139) 36%,
+    rgb(32, 41, 139) 63%,
+    rgb(54, 15, 93) 100%
   );
   border-radius: $button-radius;
   border: 1px solid $blue;
   color: $white;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 1.5rem;
   font-weight: bold;
   letter-spacing: 0.1rem;
-  padding: 0.9rem 4rem;
+  padding: 0.9rem 3.6rem;
   text-transform: uppercase;
-  transition: transform 80ms ease-in;
+  transition: all 0.4s ease-in-out;
+  box-shadow: 0.4rem  1.2rem 1.7rem rgba(0, 0, 0, 0.25),
+    0.3rem  0.9rem 0.7rem rgba(0, 0, 0, 0.22);
+  &:hover{
+    background-position-x: 126%;
+    transition: all 0.4s ease-in-out;
+    box-shadow: 0.4rem 1.2rem 1.7rem rgba(0, 0, 0, 0.45),
+    0 0.9rem 0.7rem rgba(0, 0, 0, 0.42);
+  }
 }
 
 .form > .btn {

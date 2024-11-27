@@ -66,15 +66,42 @@
 </template>
 
 <script setup>
+import axios from "axios";
 import { onMounted } from "vue";
 import { ref } from "vue";
+import { ElNotification, ElMessageBox, ElMessage } from "element-plus";
+import { useUserStore } from "../stores/userStore";
+import router from "../router";
+import request from "../api/request";
 
-onMounted(() => {
-  const signInBtn = document.getElementById("signIn");
-  const signUpBtn = document.getElementById("signUp");
+
+onMounted(async () => {
+  if (userStore.isLogin) {
+    userStore.jwtToken = "";
+    const verifyToken = (await request.get("/auth/profile")).data;
+    console.log("verify", verifyToken);
+    if (verifyToken.code == 200) {
+      router.push("/home");
+      ElMessage({
+        message: `Welcom, ${userStore.userInfo.name}`,
+        type: "success",
+      });
+    } else {
+      const refreshTokenRes = (await request.get("/auth/refresh")).data;
+      if (refreshTokenRes.code == 200) {
+        userStore.refreshTokens(
+          loginRes.data["access_token"],
+          loginRes.data["refresh_token"]
+        );
+      }
+      else {
+        userStore.logout();
+        console.log("token expired... need to relogin");
+      }
+    }
+  }
   const fistForm = document.getElementById("form1");
   const secondForm = document.getElementById("form2");
-  const container = document.querySelector(".container");
 
   fistForm.addEventListener("submit", (e) => e.preventDefault());
   secondForm.addEventListener("submit", (e) => e.preventDefault());
@@ -90,43 +117,51 @@ const userSignInInfo = ref({
   email: "",
   password: "",
 });
+const userStore = useUserStore();
 
 const change2SignIn = () => {
-  loginState.value = true
-  userSignInInfo.value.email = userSignUpInfo.value.email
-  userSignInInfo.value.password = userSignUpInfo.value.password
-}
+  loginState.value = true;
+  userSignInInfo.value.email = userSignUpInfo.value.email;
+  userSignInInfo.value.password = userSignUpInfo.value.password;
+};
 
 const change2SignUp = () => {
-  loginState.value = false
-  userSignUpInfo.value.email = userSignInInfo.value.email
-  userSignUpInfo.value.password = userSignInInfo.value.password
-}
+  loginState.value = false;
+  userSignUpInfo.value.email = userSignInInfo.value.email;
+  userSignUpInfo.value.password = userSignInInfo.value.password;
+};
 
-const signInClick = () => {
-  console.log("登录submit");
-  console.log(userSignInInfo.value);
+const signInClick = async () => {
+  // console.log("登录submit");
+  // console.log(userSignInInfo.value);
+  const loginRes = await userStore.login(userSignInInfo.value.email, userSignInInfo.value.password);
+  if (loginRes == "登录成功") {
+    const queryParams = router.currentRoute.value.query
+    console.log("query params", queryParams)
+    if(queryParams && queryParams.redirect) {
+      router.push(queryParams.redirect)
+    } else {
+      console.log("default redirect to home")
+      router.push("/home")      
+    }
+    ElNotification.success("Login Succeed!");
+    ElMessage({
+      message: `Welcom, ${userStore.userInfo.name}`,
+      type: "success",
+    });
+  } else {
+    ElMessageBox.alert(loginRes, "Login Failed", {
+      confirmButtonText: "OK",
+      type: "error",
+      center: true,
+    });
+  }
 };
 
 const signUpClick = () => {
   console.log("注册submit");
   console.log(userSignUpInfo.value);
 };
-
-// http.post('/admin/login',{
-//         adminName: user.username,
-//         adminPassword: user.password
-//        }).then((response)=>{
-//         if(response.data.code==200){
-//             //-:修改全局的登录状态
-//             store.isLogin = true
-//             store.userInfo.userName = response.data.data.adminName
-//             //-:登录成功之后，跳转到首页面
-//             router.push('/home')
-//         }else{
-//             ElMessage.success(response.data.message)
-//         }
-//        })
 </script>
 
 <style lang="scss" scoped>
@@ -137,19 +172,6 @@ $lightblue: #008997;
 $button-radius: 0.7rem;
 $max-width: 100vw;
 $max-height: 100vh;
-
-body {
-  align-items: center;
-  background-color: $white;
-  // background: url("/bg-1.png");
-  background-attachment: fixed;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  display: grid;
-  height: 100vh;
-  place-items: center;
-}
 
 .form__title {
   color: $gray;
@@ -168,7 +190,7 @@ body {
 
 .container {
   background-color: $white;
-  border-radius: $button-radius;
+  // border-radius: $button-radius;
   box-shadow: 0 0.9rem 1.7rem rgba(0, 0, 0, 0.25),
     0 0.7rem 0.7rem rgba(0, 0, 0, 0.22);
   height: $max-height;

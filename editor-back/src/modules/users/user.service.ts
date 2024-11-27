@@ -12,7 +12,7 @@ export class UserService {
 	 */
 	async findAll() {
 		const result = await this.prisma.users.findMany();
-		return result;
+		return responseMessage(result);
 	}
 
 	async findByEmail(email: string) {
@@ -21,13 +21,22 @@ export class UserService {
 				email,
 			},
 		});
-		return result;
+		return responseMessage(result);
+	}
+
+	async findByUid(uid: string) {
+		const result = await this.prisma.users.findUnique({
+			where: {
+				uid,
+			},
+		});
+		return responseMessage(result);
 	}
 
 	async createUser(userInfo: User.Create.UserBasicInfo) {
 		const existUser = await this.findByEmail(userInfo.email);
-		if (existUser != null || existUser != undefined) {
-			return null;
+		if (existUser) {
+			return responseMessage(null, "用户已存在", 10);
 		}
 		// console.log(userInfo);
 		if (userInfo.role === null || userInfo.role === undefined) {
@@ -41,11 +50,11 @@ export class UserService {
 				role: userInfo.role,
 			},
 		});
-		return {
+		return responseMessage({
 			id: insertRes.uid,
 			name: insertRes.name,
 			role: insertRes.role,
 			tasks: insertRes.tasks,
-		};
+		});
 	}
 }

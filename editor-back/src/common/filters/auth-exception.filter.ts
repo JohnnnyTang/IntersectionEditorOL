@@ -2,16 +2,16 @@ import {
 	ArgumentsHost,
 	Catch,
 	ExceptionFilter,
-	HttpException,
+	UnauthorizedException,
 } from "@nestjs/common";
 import { Response } from "express";
 
 import { responseMessage } from "@/common/interceptors/reponse";
 
 // @Catch() 装饰器绑定所需的元数据到异常过滤器上。它告诉 Nest这个特定的过滤器正在寻找
-@Catch(HttpException)
-export class HttpExceptionsFilter implements ExceptionFilter {
-	catch(exception: HttpException, host: ArgumentsHost) {
+@Catch(UnauthorizedException)
+export class UnauthorizedExceptionsFilter implements ExceptionFilter {
+	catch(exception: UnauthorizedException, host: ArgumentsHost) {
 		// 获取上下文
 		const ctx = host.switchToHttp();
 		// 获取响应体

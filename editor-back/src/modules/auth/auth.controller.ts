@@ -10,6 +10,7 @@ import {
 } from "@nestjs/common";
 import { AuthGuard } from "./auth.guard";
 import { AuthService } from "./auth.service";
+import { responseMessage } from "@/common/interceptors/reponse";
 
 @Controller("auth")
 export class AuthController {
@@ -24,6 +25,11 @@ export class AuthController {
 	@UseGuards(AuthGuard)
 	@Get("profile")
 	getProfile(@Request() req) {
-		return req.user;
+		return responseMessage(req.user);
+	}
+
+	@Post("refresh")
+	refresh(@Body("refresh_token") refresh_token: string) {
+		return this.authService.refreshToken(refresh_token);
 	}
 }

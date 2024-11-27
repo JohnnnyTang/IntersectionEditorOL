@@ -1,41 +1,68 @@
-import {createRouter,createWebHistory} from 'vue-router'
-import { useUserStore } from '../stores/userStore.js'
- 
- 
+import { createRouter, createWebHistory } from "vue-router";
+import { useUserStore } from "../stores/userStore.js";
+// import request from "../api/request.js";
+import { ElMessage } from "element-plus";
+import Header from "../layouts/Header.vue";
+import Dashboard from "../views/Dashboard.vue";
+import Home from "../views/Home.vue";
+
 const router = createRouter({
-    history: createWebHistory(),
-    routes: [
-        {
-            path: '/',
-            redirect: '/login'
-        },
-        {
-            path: '/login',
-            name: 'login',
-            component: () => import('../views/Login.vue')
-        },
-        {
-            path: '/home',
-            name: 'home',
-            component: () => import('../views/Home.vue')
-        },
-    ]
-})
+  history: createWebHistory(),
+  routes: [
+    {
+      path: "/",
+      redirect: "/home",
+    },
+    {
+      path: "/login",
+      name: "login",
+      component: () => import("../views/Login.vue"),
+    },
+    {
+      path: "/home",
+      name: "home",
+      components: {
+        default: Header,
+        b: Home,
+      },
+      meta: { requiresAuth: true }, // 设置路由元信息，表示需要登录才能访问
+    },
+    {
+      path: "/dashboard",
+      name: "dashboard",
+      components: {
+        default: Header,
+        b: Dashboard,
+      },
+      meta: { requiresAuth: true }, // 设置路由元信息，表示需要登录才能访问
+    },
+  ],
+});
 
 //-前置守卫路由:登录校验
-router.beforeEach((to,from,next)=>{
-    const store = useUserStore()
+router.beforeEach((to, from, next) => {
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
+    const store = useUserStore();
     //-：获取是否登录的状态
-    let isLogin = store.isLogin
-    console.log(isLogin);
+    let isLogin = store.isLogin;
+    // console.log(isLogin);
     //-:访问的请求不是 login，不是reg 也没有登录
-    if(to.name!=='login'&&!isLogin){
-        next({name: 'login'})
-    }else if(to.name=='login'&&isLogin){//-:已经登录了，还在访问登录请求
-        next({name: 'home'})
-    }else{//否则，该干啥干啥
-        next()
+    if (!isLogin) {
+      next({ name: "login", query: { redirect: to.fullPath } });
+    } else if (to.name == "login" && isLogin) {
+      //-:已经登录了，还在访问登录请求
+      next({ name: "home" });
+      ElMessage({
+        message: `Welcom, ${store.userInfo.name}`,
+        type: "success",
+      });
+    } else {
+      //否则，该干啥干啥
+      next();
     }
-})
+  } else {
+    next();
+  }
+});
 
-export default router
+export default router;

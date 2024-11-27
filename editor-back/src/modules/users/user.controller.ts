@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { CreateUserDTO } from "@/dto/user.create.dto";
-import { responseMessage } from "@/common/interceptors/reponse";
+import { AuthGuard } from "../auth/auth.guard";
 
 @Controller("user")
 export class UserController {
@@ -11,20 +11,23 @@ export class UserController {
   */
 	@Get()
 	findAll() {
-		return responseMessage(this.userService.findAll());
+		return this.userService.findAll();
 	}
 
 	@Post()
 	create(@Body() createUserDTO: CreateUserDTO) {
-		const result = this.userService.createUser(createUserDTO);
-		if (!result) {
-			return responseMessage(null, "用户已存在", 400);
-		}
-		return responseMessage(result, "注册成功");
+		return this.userService.createUser(createUserDTO);
 	}
 
 	@Get("email/:email")
+	@UseGuards(AuthGuard)
 	findByEmail(@Param("email") email: string) {
-		return responseMessage(this.userService.findByEmail(email));
+		return this.userService.findByEmail(email);
+	}
+
+	@Get("id/:id")
+	@UseGuards(AuthGuard)
+	findByUid(@Param("id") id: string) {
+		return this.userService.findByUid(id);
 	}
 }

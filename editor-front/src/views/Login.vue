@@ -1,12 +1,27 @@
 <template>
-  <div class="container" :class="{'right-panel-active': !loginState}">
+  <div class="container" :class="{ 'right-panel-active': !loginState }">
     <!-- Sign Up -->
     <div class="container__form container--signup">
       <form action="#" class="form" id="form1">
         <h2 class="form__title">Sign Up</h2>
-        <input type="text" placeholder="User Name" class="input" />
-        <input type="email" placeholder="Email" class="input" />
-        <input type="password" placeholder="Password" class="input" />
+        <input
+          type="text"
+          placeholder="User Name"
+          class="input"
+          v-model="userSignUpInfo.name"
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          class="input"
+          v-model="userSignUpInfo.email"
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          class="input"
+          v-model="userSignUpInfo.password"
+        />
         <button class="btn" @click="signUpClick">Sign Up</button>
       </form>
     </div>
@@ -15,8 +30,18 @@
     <div class="container__form container--signin">
       <form action="#" class="form" id="form2">
         <h2 class="form__title">Sign In</h2>
-        <input type="email" placeholder="Email" class="input" />
-        <input type="password" placeholder="Password" class="input" />
+        <input
+          type="email"
+          placeholder="Email"
+          class="input"
+          v-model="userSignInInfo.email"
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          class="input"
+          v-model="userSignInInfo.password"
+        />
         <a href="#" class="link">Forgot your password?</a>
         <button class="btn" @click="signInClick">Sign In</button>
       </form>
@@ -26,10 +51,14 @@
     <div class="container__overlay">
       <div class="overlay">
         <div class="overlay__panel overlay--left">
-          <button class="btn" id="signIn" @click="loginState = true">Sign In</button>
+          <button class="btn" id="signIn" @click="change2SignIn">
+            Sign In
+          </button>
         </div>
         <div class="overlay__panel overlay--right">
-          <button class="btn" id="signUp" @click="loginState = false">Sign Up</button>
+          <button class="btn" id="signUp" @click="change2SignUp">
+            Sign Up
+          </button>
         </div>
       </div>
     </div>
@@ -47,26 +76,41 @@ onMounted(() => {
   const secondForm = document.getElementById("form2");
   const container = document.querySelector(".container");
 
-  // signInBtn.addEventListener("click", () => {
-  //   container.classList.remove("right-panel-active");
-  // });
-
-  // signUpBtn.addEventListener("click", () => {
-  //   container.classList.add("right-panel-active");
-  // });
-
   fistForm.addEventListener("submit", (e) => e.preventDefault());
   secondForm.addEventListener("submit", (e) => e.preventDefault());
 });
 
 const loginState = ref(false);
+const userSignUpInfo = ref({
+  name: "",
+  email: "",
+  password: "",
+});
+const userSignInInfo = ref({
+  email: "",
+  password: "",
+});
+
+const change2SignIn = () => {
+  loginState.value = true
+  userSignInInfo.value.email = userSignUpInfo.value.email
+  userSignInInfo.value.password = userSignUpInfo.value.password
+}
+
+const change2SignUp = () => {
+  loginState.value = false
+  userSignUpInfo.value.email = userSignInInfo.value.email
+  userSignUpInfo.value.password = userSignInInfo.value.password
+}
 
 const signInClick = () => {
-  console.log('登录submit');
+  console.log("登录submit");
+  console.log(userSignInInfo.value);
 };
 
 const signUpClick = () => {
-  console.log('注册submit');
+  console.log("注册submit");
+  console.log(userSignUpInfo.value);
 };
 
 // http.post('/admin/login',{
@@ -93,7 +137,6 @@ $lightblue: #008997;
 $button-radius: 0.7rem;
 $max-width: 100vw;
 $max-height: 100vh;
-
 
 body {
   align-items: center;
@@ -251,13 +294,13 @@ body {
   padding: 0.9rem 3.6rem;
   text-transform: uppercase;
   transition: all 0.4s ease-in-out;
-  box-shadow: 0.4rem  1.2rem 1.7rem rgba(0, 0, 0, 0.25),
-    0.3rem  0.9rem 0.7rem rgba(0, 0, 0, 0.22);
-  &:hover{
+  box-shadow: 0.4rem 1.2rem 1.7rem rgba(0, 0, 0, 0.25),
+    0.3rem 0.9rem 0.7rem rgba(0, 0, 0, 0.22);
+  &:hover {
     background-position-x: 126%;
     transition: all 0.4s ease-in-out;
     box-shadow: 0.4rem 1.2rem 1.7rem rgba(0, 0, 0, 0.45),
-    0 0.9rem 0.7rem rgba(0, 0, 0, 0.42);
+      0 0.9rem 0.7rem rgba(0, 0, 0, 0.42);
   }
 }
 

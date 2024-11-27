@@ -41,6 +41,11 @@ export class UserService {
 				role: userInfo.role,
 			},
 		});
-		return insertRes;
+		return {
+			id: insertRes.uid,
+			name: insertRes.name,
+			role: insertRes.role,
+			tasks: insertRes.tasks,
+		};
 	}
 }

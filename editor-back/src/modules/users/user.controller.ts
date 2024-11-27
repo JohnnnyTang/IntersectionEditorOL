@@ -20,7 +20,7 @@ export class UserController {
 		if (!result) {
 			return responseMessage(null, "用户已存在", 400);
 		}
-		return responseMessage(result);
+		return responseMessage(result, "注册成功");
 	}
 
 	@Get("email/:email")

@@ -5,6 +5,7 @@ import { HttpExceptionsFilter } from "@/common/filters/http-exception.filter"; /
 import { UnauthorizedExceptionsFilter } from "@/common/filters/auth-exception.filter";
 import { ValidationPipe } from "@/pipe/global.validation.pipe"; // 全局管道
 import * as session from "express-session";
+import { createProxyMiddleware } from "http-proxy-middleware";
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -21,6 +22,23 @@ async function bootstrap() {
 			secret: "gnatizoah",
 			resave: false,
 			saveUninitialized: true,
+		}),
+	);
+
+	app.use(
+		"/proxy",
+		createProxyMiddleware({
+			target: "http://127.0.0.1:3001/v1",
+			changeOrigin: true,
+			secure: false,
+			on: {
+				proxyReq: (proxyReq, req, res) => {
+					console.log(proxyReq.path);
+					console.log(
+						`[NestMiddleware]: Proxying ${req.method} request originally made from '${req.url}' to ${proxyReq.path}...`,
+					);
+				},
+			},
 		}),
 	);
 

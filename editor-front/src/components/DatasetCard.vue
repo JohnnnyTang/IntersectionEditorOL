@@ -20,7 +20,7 @@
         </div>
       </div>
     </div>
-    <div class="more-info-button">
+    <div class="more-info-button" @click="Nav2CityMap">
       <a class="cta" href="#">
         <span>Map</span>
         <span>
@@ -63,9 +63,17 @@
 </template>
 
 <script setup>
-import { defineProps, ref } from "vue";
+import { defineProps, onMounted, ref } from "vue";
+import router from "../router";
+import { useNavStore } from "../stores/navStore";
+const navStore = useNavStore();
 
 const props = defineProps(["styleProps", "infoProps", "isLoading", "title"]);
+const Nav2CityMap = () => {
+  navStore.curIndex = 1;
+  router.push({ name: "visual", query: { city: props.title } });
+};
+onMounted(() => {});
 </script>
 
 <style lang="scss" scoped>
@@ -255,6 +263,5 @@ const props = defineProps(["styleProps", "infoProps", "isLoading", "title"]);
       }
     }
   }
-
 }
 </style>

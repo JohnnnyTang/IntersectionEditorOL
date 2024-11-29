@@ -1,5 +1,6 @@
 import axios from "axios";
 import request from "./request";
+import { resolveBbox2Array } from "../utils/common";
 
 export default class BackAPI {
   static async request4CrossTable(tableFilter) {
@@ -34,11 +35,16 @@ export default class BackAPI {
     }
   }
 
-  static async request4TablesSingleQuery(crossTableList, queryText, paramName) {
+  static async request4TablesSingleQuery(
+    crossTableList,
+    tableNameProp,
+    queryText,
+    paramName
+  ) {
     try {
       const reqests = crossTableList.map((curVal, index, arr) => {
         return request.get(
-          `/proxy/query/${curVal.table_name}?columns=${queryText}`
+          `/proxy/query/${curVal[tableNameProp]}?columns=${queryText}`
         );
       });
       const resList = (await axios.all(reqests)).map((curVal, index, arr) => {
@@ -69,10 +75,27 @@ export default class BackAPI {
       const resList = (await axios.all(reqests)).map((curVal, index, arr) => {
         return curVal.data[0]["a"];
       });
-      console.log(resList);
+      // console.log(resList);
       return resList;
     } catch (err) {
       console.log(`request for ${queryText} for ${filterTextList} failed.`);
+      console.log(err);
+      return null;
+    }
+  }
+
+  static async request4CityDataBbox(tableName, filter = null) {
+    try {
+      const bboxRes = (
+        await request.get(
+          `/proxy/bbox/${tableName}?geom_column=geom&srid=4326${
+            filter ? "&filter=" + filter : ""
+          }`
+        )
+      ).data[0]["bbox"];
+      return resolveBbox2Array(bboxRes);
+    } catch (err) {
+      console.log(`request bbox for ${tableName} failed.`);
       console.log(err);
       return null;
     }

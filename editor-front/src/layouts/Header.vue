@@ -1,23 +1,59 @@
 <template>
   <div class="header-container">
     <div class="title-container">Road Intersection Editor</div>
-    <div class="nav-item" :class="{ active: homeItemActive }">
-      <div class="nav-text">Home</div>
+    <div
+      class="nav-item"
+      :class="{ active: activeIndex == item.index }"
+      v-for="item in navItems"
+      :key="item.index"
+      @click="nav2Page(item.index)"
+    >
+      <div class="nav-text">{{ item.name }}</div>
       <div class="dec-line"></div>
     </div>
-    <div class="nav-item" :class="{ active: taskItemActive }">
-      <div class="nav-text">Tasks</div>
-      <div class="dec-line"></div>
-    </div>
+    <div
+      class="nav-item"
+      :class="{ active: activeIndex == 0 }"
+      @click="activeIndex = 0"
+    ></div>
     <div class="avatar-container"></div>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { onBeforeMount, ref } from "vue";
+import { useNavStore } from "../stores/navStore";
+import router from "../router";
 
-const homeItemActive = ref(true);
-const taskItemActive = ref(false);
+const navStore = useNavStore();
+const activeIndex = ref(0);
+
+const navItems = ref([
+  { name: "Home", path: "home", index: 0, query: null },
+  { name: "Dataset", path: "visual", index: 1, query: { city: "Beijing" } },
+  { name: "Tasks", path: "task", index: 2, query: null },
+]);
+
+const nav2Page = (index) => {
+  activeIndex.value = index;
+  router.push({
+    name: navItems.value[index].path,
+    query: navItems.value[index].query,
+  });
+};
+
+const subscribe = navStore.$subscribe((mut, state) => {
+  // console.log("header", mut);
+  if (activeIndex.value != state.curIndex) {
+    activeIndex.value = state.curIndex;
+    console.log(state.curIndex);
+  }
+});
+
+onBeforeMount(() => {
+  console.log(router.currentRoute.value);
+  navStore.navChange(router.currentRoute.value.path.replace("/", ""));
+});
 </script>
 
 <style lang="scss" scoped>

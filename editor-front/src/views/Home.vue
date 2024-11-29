@@ -26,10 +26,10 @@
         </KeyValCard>
       </div>
     </div>
-    <el-scrollbar>
+    <el-scrollbar @mousewheel="scroll" ref="scrollBar">
       <div class="scroll-container">
         <DatasetCard
-          v-for="(val, key, id) in cityInfoDict"
+          v-for="(val, key, id) in cityInfoStore.cityInfo"
           :key="id"
           :styleProps="cityDataCardStyleInfo"
           :title="key"
@@ -48,6 +48,24 @@ import BackAPI from "../api/api";
 import { onMounted, ref } from "vue";
 import { capitalizeFirst } from "../utils/common";
 import { DotLottieVue } from "@lottiefiles/dotlottie-vue";
+import { useCityInfoStore } from "../stores/cityInfoStore";
+
+const cityInfoStore = useCityInfoStore();
+let scrollLeft = 0;
+const scrollBar = ref();
+const scroll = (e) => {
+  // if (
+  //   e.target.className.includes("lib-desc-container") ||
+  //   e.target.className.includes("lib-pic-container")
+  // ) {
+  //   return;
+  // }
+  scrollLeft += e.deltaY;
+  if (scrollLeft < 0) {
+    scrollLeft = 0;
+  }
+  scrollBar.value.setScrollLeft(scrollLeft);
+};
 
 const keyValCardInfo = ref([
   {
@@ -78,76 +96,33 @@ const cityDataCardStyleInfo = ref({
   height: "72vh",
 });
 
-let cityDataCardTemp = {
-  title: "Test",
-  info: [
-    { key: "Cover Area", val: "" },
-    { key: "Total Intersection", val: "" },
-    { key: "Cover Area", val: "" },
-    { key: "Cover Area", val: "" },
-  ],
-  isLoading: true,
-};
-
-const cityDataCard = ref([
-  {
-    title: "Test",
-    info: [
-      { key: "Cover Area", val: "" },
-      { key: "Total Intersection", val: "" },
-      { key: "Simple Intersection", val: "" },
-      { key: "Complex Intersection", val: "" },
-      { key: "Three-branch", val: "" },
-      { key: "Four-branch", val: "" },
-    ],
-    isLoading: true,
-  },
-]);
-
-const cityInfoDict = ref({});
-const filterList = [
-  "type='simple'",
-  "type='complicated'",
-  "road_num=3",
-  "road_num=4",
-];
+// const cityInfoDict = ref({});
 
 onMounted(async () => {
   const crossTables = await BackAPI.request4CrossTable(
     "i.table_name like '%_cross'"
   );
-  console.log(crossTables);
+  // console.log(crossTables);
   const cityNum = crossTables.length;
   keyValCardInfo.value[0].valText = cityNum;
   keyValCardInfo.value[0].isLoading = false;
 
   const cityNameList = crossTables.map((curVal, index, arr) => {
-    const cityName = capitalizeFirst(curVal.table_name.split("_")[0]);
-    cityInfoDict.value[cityName] = {
-      info: {
-        "Cover Area": "",
-        "Total Intersection": "",
-        "Simple Intersection": "",
-        "Complex Intersection": "",
-        "Three-branch": "",
-        "Four-branch": "",
-      },
-      isLoading: true,
-      tableName: curVal.table_name,
-    };
-    return cityName;
+    return cityInfoStore.initCityInfoByTableName(curVal.table_name);
   });
-  console.log(cityInfoDict);
+  // console.log(cityInfoStore.cityInfo);
 
   const crossNumberList = await BackAPI.request4TablesSingleQuery(
     crossTables,
+    "table_name",
     "count(*)",
     "count"
   );
+
   crossNumberList.forEach((v, i) => {
-    cityInfoDict.value[cityNameList[i]].info["Total Intersection"] = v;
+    cityInfoStore.cityInfo[cityNameList[i]].info["Total Intersection"] = v;
   });
-  console.log("crossNumber", crossNumberList);
+  // console.log("crossNumber", crossNumberList);
   const crossSum = crossNumberList.reduce((accumulator, currentItem) => {
     return accumulator + Number(currentItem); // 或者 parseInt(currentItem) 或 parseFloat(currentItem)
   }, 0);
@@ -155,11 +130,12 @@ onMounted(async () => {
 
   const areaList = await BackAPI.request4TablesSingleQuery(
     crossTables,
+    "table_name",
     "ST_Area(ST_Envelope(ST_Collect(geom))) AS area",
     "area"
   );
   areaList.forEach((v, i) => {
-    cityInfoDict.value[cityNameList[i]].info["Cover Area"] =
+    cityInfoStore.cityInfo[cityNameList[i]].info["Cover Area"] =
       "~" + (v / 1000000).toFixed(2);
   });
   // console.log("area", areaList);
@@ -169,17 +145,11 @@ onMounted(async () => {
   keyValCardInfo.value[1].valText = "~" + (areaSum / 1000000).toFixed(0);
 
   cityNameList.forEach(async (v, i) => {
-    console.log(cityInfoDict.value[v].tableName);
-    const cityRes = await BackAPI.request4SingleTableQueryMultiFilter(
-      cityInfoDict.value[v].tableName,
-      "count(*)",
-      filterList
-    );
-    cityInfoDict.value[v].info["Simple Intersection"] = cityRes[0];
-    cityInfoDict.value[v].info["Complex Intersection"] = cityRes[1];
-    cityInfoDict.value[v].info["Three-branch"] = cityRes[2];
-    cityInfoDict.value[v].info["Four-branch"] = cityRes[3];
+    // console.log(cityInfoStore.cityInfo[v].tableName);
+    await cityInfoStore.updateCityDetailInfo(v);
   });
+
+  // cityInfoStore.cityInfo = cityInfoStore.cityInfo
 });
 </script>
 

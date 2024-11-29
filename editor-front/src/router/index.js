@@ -5,6 +5,8 @@ import { ElMessage } from "element-plus";
 import Header from "../layouts/Header.vue";
 import Dashboard from "../views/Dashboard.vue";
 import Home from "../views/Home.vue";
+import DataVisual from "../views/DataVisual.vue";
+import Tasks from "../views/Tasks.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -28,6 +30,24 @@ const router = createRouter({
       meta: { requiresAuth: true }, // 设置路由元信息，表示需要登录才能访问
     },
     {
+      path: "/visual",
+      name: "visual",
+      components: {
+        default: Header,
+        b: DataVisual,
+      },
+      meta: { requiresAuth: true }, // 设置路由元信息，表示需要登录才能访问
+    },
+    {
+      path: "/task",
+      name: "task",
+      components: {
+        default: Header,
+        b: Tasks,
+      },
+      meta: { requiresAuth: true }, // 设置路由元信息，表示需要登录才能访问
+    },
+    {
       path: "/dashboard",
       name: "dashboard",
       components: {
@@ -41,6 +61,10 @@ const router = createRouter({
 
 //-前置守卫路由:登录校验
 router.beforeEach((to, from, next) => {
+  if (to.path == "/visual" && !to.query.city) {
+    console.log("route add")
+    to.query = {city: "Beijing"};
+  }
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     const store = useUserStore();
     //-：获取是否登录的状态
